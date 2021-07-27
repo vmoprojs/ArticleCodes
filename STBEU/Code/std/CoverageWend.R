@@ -70,6 +70,7 @@ weighted=0
 #### Simluation:
 
 SolPar <- NULL
+SolSD <- NULL
 
 semilla = 1537
 set.seed(semilla)
@@ -80,15 +81,17 @@ while(i <=nsim){
                corrmodel="Wen_time", param=as.list(param),
                model = "Gaussian",sparse = TRUE)$data
   
-  aux=STBEUFit(theta =start,fixed = unlist(fix),
+  tryCatch({aux=STBEUFit(theta =start,fixed = unlist(fix),
                coords = coords,times=times,cc=3,datos=dd,
                type_dist=type_dist,
                maxdist=maxdist1 ,maxtime=maxtime1,
                winc_s=winc,winstp_s=winstp,
                winc_t=NULL,
-               winstp_t=NULL,subs=type_subs,weighted=weighted)
+               winstp_t=NULL,subs=type_subs,weighted=weighted,varest = TRUE)},
+           error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   
   SolPar <- rbind(SolPar,aux$par)
+  SolSD <- rbind(SolSD,aux$stderr)
   cat("Iter: ",i,"de: ",nsim,"\n")
   i = i+1
 }
@@ -107,16 +110,48 @@ par(mfrow = c(1,1))
 
 
 
-load("/Users/victormorales/Documents/Software/STBEU/Simulations/Results/sep.RData")
 
-setwd("~/Documents/Articles/STBEU/STBEU-16-12-20/Figures")
+mm <- SolPar 
+se <- SolSD
 
-pdf("sep.pdf")
-par(mfrow = c(2,2))
-boxplot(solSTBEU[,1], main = expression(alpha[s]));abline(h = scale_s, col = "blue")
-boxplot(solSTBEU[,2], main = expression(alpha[t]));abline(h = scale_t, col = "blue")
-boxplot(solSTBEU[,3], main = expression(sigma^2));abline(h = sill, col = "blue")
-boxplot(solSTBEU[,4], main = expression(beta));abline(h = sep, col = "blue")
-par(mfrow = c(1,1))
-dev.off()
+qq <- qnorm(0.975)
 
+# ******** SCALE S
+lo.conf.scale_s <- mm[,1] - qq*se[,1]
+up.conf.scale_s <- mm[,1] + qq*se[,1]
+
+bl.scale_s <- sum(start$scale_s<lo.conf.scale_s) # bad lower
+bu.scale_s <- sum(up.conf.scale_s<start$scale_s) # bad upper
+
+1-(bl.scale_s+bu.scale_s)/nsim # should be close to 1
+
+
+
+# ******** SCALE T
+lo.conf.scale_t <- mm[,2] - qq*se[,2]
+up.conf.scale_t <- mm[,2] + qq*se[,2]
+
+bl.scale_t <- sum(start$scale_t<lo.conf.scale_t) # bad lower
+bu.scale_t <- sum(up.conf.scale_t<start$scale_t) # bad upper
+1-(bl.scale_t+bu.scale_t)/nsim # should be close to 1
+
+
+
+# ******** SILL
+lo.conf.sill <- mm[,3] - qq*se[,3]
+up.conf.sill <- mm[,3] + qq*se[,3]
+
+bl.sill <- sum(start$sill<lo.conf.sill) # bad lower
+bu.sill <- sum(up.conf.sill<start$sill) # bad upper
+1-(bl.sill+bu.sill)/nsim # should be close to 1
+
+
+
+
+# ******** Sep
+lo.conf.sep <- mm[,4] - qq*se[,4]
+up.conf.sep <- mm[,4] + qq*se[,4]
+
+bl.sep <- sum(start$sep<lo.conf.sep) # bad lower
+bu.sep <- sum(up.conf.sep<start$sep) # bad upper
+1-(bl.sep+bu.sep)/nsim # should be close to 1

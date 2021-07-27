@@ -415,6 +415,7 @@ dat <- data.frame(GDPP=as.numeric(GDPP),
                   Financiero = as.numeric(Financiero))
 # dat <- data.frame(exitoso,interna,externa,otros,i.interna)
 str(dat)
+dat$DPA_PROVIN <- rownames(dat)
 
 ### ST: DESCRIPTIVO
 
@@ -433,7 +434,35 @@ library(maptools)
 
 setwd("~/Documents/Consultorias&Cursos/DataLectures/SpatialData")
 
-pr <- rgdal::readOGR("nxprovincias.shp")
+read_git_shp <- function(uu)
+{
+  #creamos un par de archivos temporales
+  temp <- tempfile()
+  temp2 <- tempfile()
+  #decargamos el zip folder y lo guardamos en 'temp' 
+  
+  download.file(uu,temp)
+  #descomprimir en 'temp' y guardarlo en 'temp2'
+  unzip(zipfile = temp, exdir = temp2)
+  #encontramos los archivos SHP
+  #el $ al final de ".shp$" asegura que no encontremos archivos del tipo .shp.xml 
+  your_SHP_file <- list.files(temp2, pattern = ".shp$",full.names=TRUE)
+  
+  ff = strsplit(your_SHP_file,"/")
+  ff = unlist(ff)
+  ff = ff[length(ff)]
+  ff = strsplit(ff,".shp")
+  ff = unlist(ff)
+  
+  datos = rgdal::readOGR(your_SHP_file,layer = ff)
+  unlink(temp)
+  unlink(temp2)
+  return(datos)
+}
+
+uu <- "https://github.com/vmoprojs/DataLectures/raw/master/SpatialData/ProvEcuador.zip"
+
+pr <- read_git_shp(uu)
 pr <- pr[pr$DPA_PROVIN!=90,]
 pr <- pr[pr$DPA_PROVIN!=20,]
 dat <- dat[-c(20),]
@@ -445,7 +474,7 @@ plot(density(dat$exitoso))
 setwd("~/Dropbox/FLACSO/Innovacion/Trabajos/Writing")
 # ************Mapping Farm Density in 2007
 pal.red <- brewer.pal(5,"Reds")
-q5.den <- classIntervals(dat$prod,5,style="quantile") 
+q5.den <- classIntervals(dat$exitoso,5,style="quantile") 
 cols.den <- findColours(q5.den, pal.red)
 AcrProv <- substr(pr@data$DPA_DESPRO,1,4)
 if(pp ==1)
@@ -464,7 +493,7 @@ if(pp ==1)
 
 
 
-W_cont_el<-poly2nb(pr, queen=FALSE)
+W_cont_el<-poly2nb(pr, queen=TRUE)
 W_cont_el_mat<-nb2listw(W_cont_el, style="W", zero.policy=TRUE)
 W_cont_el_mat
 
@@ -1227,4 +1256,7 @@ res <- mod.sdm$residuals
 ## Residual Autocorrelation
 
 moran.test(res, listw=W_cont_el_mat, zero.policy=T)
-
+names(dat)
+mm <- lm(exitoso~actipor,data = dat)
+summary(mm)
+moran.test(resid(mm), listw=W_cont_el_mat, zero.policy=T)
