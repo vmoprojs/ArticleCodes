@@ -970,9 +970,3 @@ aux$geometry <- NULL
 head(aux,10)
 
 # ********************** END: efectos fila y columna. *********************
-
-
-# gráficos
-# Moran local
-# efectos directos indirectos
-# efectos y efecto c
