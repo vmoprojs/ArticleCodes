@@ -10,6 +10,7 @@ library(spatialreg)
 library(spd)
 library(lmtest)
 library(MTest)
+library(tseries)
 
 
 read_git_shp <- function(uu) {
@@ -55,9 +56,9 @@ rm <- poligonos %>%
   filter(Region=="Región Metropolitana de Santiago")
 
 AcronimRM <- c("SJQ","SM","SR","IND","LC","PÑL","PROV","LR","CDT","CLN","STG",
-             "LMP","PIR","PTEA","HUE","SBER","CUR","MPIN","CRR","CNV",
-             "VIT","CLI","EBQ","ECT","LFL","LGJ","LPNA","LCD","LBNA","LESP","LPR","MAC","MAI","ÑUÑ","PAG",
-             "PUD","QUIL","QNM","REC","REN","ELMT","PH","PEÑ","TLG","PAI","IDM","BUI","SJMP","TT","MEL","SP","ALH")
+               "LMP","PIR","PTEA","HUE","SBER","CUR","MPIN","CRR","CNV",
+               "VIT","CLI","EBQ","ECT","LFL","LGJ","LPNA","LCD","LBNA","LESP","LPR","MAC","MAI","ÑUÑ","PAG",
+               "PUD","QUIL","QNM","REC","REN","ELMT","PH","PEÑ","TLG","PAI","IDM","BUI","SJMP","TT","MEL","SP","ALH")
 centroidespointsrm <- st_centroid(rm)
 
 centroides <- cbind(rm,st_coordinates(st_centroid(rm$geometry)),AcronimRM)
@@ -96,20 +97,20 @@ coords <- st_coordinates(st_centroid(rm$geometry))
 #if(knntest)
 #{
 #  solKNN_AIC <- NULL
- # for(m in 2:10)
- # {
+# for(m in 2:10)
+# {
 #    # m = 2
- #   Wknn_test <- knearneigh(coords, k = m, longlat = TRUE)
- #   cc_test <- nb2listw(knn2nb(Wknn_test))
+#   Wknn_test <- knearneigh(coords, k = m, longlat = TRUE)
+#   cc_test <- nb2listw(knn2nb(Wknn_test))
 #    slmKNN_Test <- lagsarlm(tasa_vifm~aep+dens_pob ,
 #                            listw=cc_test,
- #                           method = "MC", zero.policy=T,data = base2rm)
- #   aux <- -2*slmKNN_Test$LL+2*slmKNN_Test$parameters
- #   solKNN_AIC <- c(solKNN_AIC,aux)
- #   print(m)
- # }
- # which.min(solKNN_AIC);min(solKNN_AIC)
- # plot(solKNN_AIC)
+#                           method = "MC", zero.policy=T,data = base2rm)
+#   aux <- -2*slmKNN_Test$LL+2*slmKNN_Test$parameters
+#   solKNN_AIC <- c(solKNN_AIC,aux)
+#   print(m)
+# }
+# which.min(solKNN_AIC);min(solKNN_AIC)
+# plot(solKNN_AIC)
 #  summary(solKNN_AIC)
 #}
 
@@ -278,8 +279,8 @@ Sol1
 
 
 Sol_x1 <- t(rbind(c(moW_x1$estimate,moW_x1$statistic,moW_x1$p.value),
-                c(moW_rf_x1$estimate,moW_rf_x1$statistic,moW_rf_x1$p.value),
-                c(moWmc_x1$statistic,mean(moWmc_x1$res),var(moWmc_x1$res),ZmoWmc_x1,moWmc_x1$p.value)))
+                  c(moW_rf_x1$estimate,moW_rf_x1$statistic,moW_rf_x1$p.value),
+                  c(moWmc_x1$statistic,mean(moWmc_x1$res),var(moWmc_x1$res),ZmoWmc_x1,moWmc_x1$p.value)))
 rownames(Sol_x1) <- c("MI","E[MI]","V[MI]","z-value","p-value")
 colnames(Sol_x1) <- c("Randomization","Normal","Monte Carlo")
 Sol_x1
@@ -303,26 +304,26 @@ Sol_x3
 
 
 Sol1_K <- t(rbind(c(moK$estimate,moK$statistic,moK$p.value),
-                c(moK_rf$estimate,moK_rf$statistic,moK_rf$p.value),
-                c(moKmc$statistic,mean(moKmc$res),var(moKmc$res),ZmoKmc,moKmc$p.value)))
+                  c(moK_rf$estimate,moK_rf$statistic,moK_rf$p.value),
+                  c(moKmc$statistic,mean(moKmc$res),var(moKmc$res),ZmoKmc,moKmc$p.value)))
 rownames(Sol1_K) <- c("MI","E[MI]","V[MI]","z-value","p-value")
 colnames(Sol1_K) <- c("Randomization","Normal","Monte Carlo")
 Sol1_K
 
 
 Sol_x1_K <- t(rbind(c(moK_x1$estimate,moK_x1$statistic,moK_x1$p.value),
-                  c(moK_rf_x1$estimate,moK_rf_x1$statistic,moK_rf_x1$p.value),
-                  c(moKmc_x1$statistic,mean(moKmc_x1$res),var(moKmc_x1$res),
-                    ZmoKmc_x1,moKmc_x1$p.value)))
+                    c(moK_rf_x1$estimate,moK_rf_x1$statistic,moK_rf_x1$p.value),
+                    c(moKmc_x1$statistic,mean(moKmc_x1$res),var(moKmc_x1$res),
+                      ZmoKmc_x1,moKmc_x1$p.value)))
 rownames(Sol_x1_K) <- c("MI","E[MI]","V[MI]","z-value","p-value")
 colnames(Sol_x1_K) <- c("Randomization","Normal","Monte Carlo")
 Sol_x1_K
 
 
 Sol_x2_K <- t(rbind(c(moK_x2$estimate,moK_x2$statistic,moK_x2$p.value),
-                  c(moK_rf_x2$estimate,moK_rf_x2$statistic,moK_rf_x2$p.value),
-                  c(moKmc_x2$statistic,mean(moKmc_x2$res),
-                    var(moKmc_x2$res),ZmoKmc_x2,moKmc_x2$p.value)))
+                    c(moK_rf_x2$estimate,moK_rf_x2$statistic,moK_rf_x2$p.value),
+                    c(moKmc_x2$statistic,mean(moKmc_x2$res),
+                      var(moKmc_x2$res),ZmoKmc_x2,moKmc_x2$p.value)))
 rownames(Sol_x2_K) <- c("MI","E[MI]","V[MI]","z-value","p-value")
 colnames(Sol_x2_K) <- c("Randomization","Normal","Monte Carlo")
 Sol_x2_K
@@ -337,9 +338,9 @@ Sol_x3_K
 
 
 Sol_I <- t(rbind(c(moI$estimate,moI$statistic,moI$p.value),
-                    c(moI_rf$estimate,moI_rf$statistic,moI_rf$p.value),
-                    c(moImc$statistic,mean(moImc$res),
-                      var(moImc$res),ZmoImc,moImc$p.value)))
+                 c(moI_rf$estimate,moI_rf$statistic,moI_rf$p.value),
+                 c(moImc$statistic,mean(moImc$res),
+                   var(moImc$res),ZmoImc,moImc$p.value)))
 rownames(Sol_I) <- c("MI","E[MI]","V[MI]","z-value","p-value")
 colnames(Sol_I) <- c("Randomization","Normal","Monte Carlo")
 Sol_I
@@ -470,7 +471,11 @@ ggplot() +
 
 
 # ********************** ST: Test de Lagrange. **********************
+hist(y)
+jarque.bera.test(y)
+qqnorm(y);qqline(y)
 mod.lm <- lm(y ~ x1+x2+x3,data = base2rm)
+
 
 RS <- lm.RStests(mod.lm, W_objetoRM, test="all")
 
@@ -500,9 +505,9 @@ W_K5 <- c(c(RSknn5$RSlag$statistic,RSknn5$RSlag$p.value),
           c(RSknn5$adjRSerr$statistic,RSknn5$adjRSerr$p.value))
 
 W_ID <- c(c(RSid$RSlag$statistic,RSid$RSlag$p.value),
-                c(RSid$adjRSlag$statistic,RSid$adjRSlag$p.value),
-                c(RSid$RSerr$statistic,RSid$RSerr$p.value),
-                c(RSid$adjRSerr$statistic,RSid$adjRSerr$p.value))
+          c(RSid$adjRSlag$statistic,RSid$adjRSlag$p.value),
+          c(RSid$RSerr$statistic,RSid$RSerr$p.value),
+          c(RSid$adjRSerr$statistic,RSid$adjRSerr$p.value))
 
 
 
@@ -567,6 +572,28 @@ summary(sem)
 
 summary(mod.lm)
 
+######### Residuals Test   ###############
+
+###OLS
+
+res<-residuals(mod.lm)
+qqnorm(res);qqline(res)
+hist(res,freq=F,breaks=6)
+jarque.bera.test(res)
+bptest(mod.lm)
+Box.test(res, lag = 1, type = "Ljung-Box")
+
+##SLM
+
+resslm<-residuals(slm)
+qqnorm(resslm);qqline(resslm)
+hist(resslm,freq=F,breaks=6)
+jarque.bera.test(resslm)
+bptest.Sarlm(slm)
+Box.test(resslm, lag = 1, type = "Ljung-Box")
+
+
+
 ##### TABLA 7 Y 8 #####
 
 
@@ -610,8 +637,8 @@ brks <- c(-Inf, 0.05, 0.95, Inf)
 
 # Asignar etiquetas a las categorías
 locMorMat$Category <- cut(locMorMat$Prob, breaks = brks, 
-                        labels = c("High-High, locM > 0", "Non significant", "Low-Low, locM < 0"),
-                        include.lowest = TRUE)
+                          labels = c("High-High, locM > 0", "Non significant", "Low-Low, locM < 0"),
+                          include.lowest = TRUE)
 
 locMorMat$AcronimRM <- rownames(locMorMat)
 base2rm <- (merge(base2rm,locMorMat[,c("Category","AcronimRM")],by= "AcronimRM"))
@@ -948,4 +975,4 @@ head(aux,10)
 # gráficos
 # Moran local
 # efectos directos indirectos
-# efectos y efecto columna
+# efectos y efecto c
